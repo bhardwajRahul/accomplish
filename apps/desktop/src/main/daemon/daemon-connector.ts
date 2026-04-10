@@ -113,6 +113,12 @@ export function spawnDaemon(dataDir: string): void {
     daemonEnv.ACCOMPLISH_IS_PACKAGED = '1';
     daemonEnv.ACCOMPLISH_RESOURCES_PATH = process.resourcesPath;
     daemonEnv.ACCOMPLISH_APP_PATH = app.getAppPath();
+    // The daemon runs as a separate Node.js process outside Electron.
+    // Native modules (better-sqlite3, node-pty) live in the Electron app's
+    // asar.unpacked — set NODE_PATH so the daemon can resolve them.
+    const unpackedModules = path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules');
+    daemonEnv.NODE_PATH =
+      unpackedModules + (daemonEnv.NODE_PATH ? path.delimiter + daemonEnv.NODE_PATH : '');
   } else {
     // Dev mode: pass desktop app path so daemon can find bundled Node.js
     // and other resources relative to the desktop workspace
